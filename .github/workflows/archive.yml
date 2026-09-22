@@ -12,11 +12,11 @@ jobs:
   restore:
     if: ${{ !contains(github.event.head_commit.message, '[archive complete]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - name: Download preserved website
-        run: python3 mirror_wayback.py --url http://2017.aistconf.ru/ --timestamp 20180105054044 --output restored-site --base 2017 --max-urls 700
+        run: python3 mirror_wayback.py --url http://2017.aistconf.ru/ --timestamp 20180105054044 --output restored-site --base 2017 --max-urls 300
       - name: Prepare static GitHub Pages copy
         run: |
           cp -a restored-site/. .
@@ -30,4 +30,3 @@ jobs:
           git add -A
           git commit -m "Restore archived AIST website [archive complete]"
           git push
-

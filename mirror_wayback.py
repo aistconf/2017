@@ -202,8 +202,8 @@ class Mirror:
         with tempfile.NamedTemporaryFile() as tmp:
             proc = subprocess.run(
                 [
-                    "curl", "-fsSL", "--retry", "3", "--retry-delay", "1",
-                    "--connect-timeout", "15", "--max-time", "90",
+                    "curl", "-fsSL",
+                    "--connect-timeout", "8", "--max-time", "40",
                     "-A", "Mozilla/5.0 AIST archival mirror",
                     "-o", tmp.name, "-w", "%{content_type}\n%{url_effective}", replay,
                 ],
@@ -233,12 +233,12 @@ class Mirror:
             except (HTTPError, URLError, TimeoutError, OSError) as exc:
                 self.attempts[original] += 1
                 network_block = "curl: (7)" in str(exc)
-                limit = 12 if network_block else 3
+                limit = 4 if network_block else 2
                 if self.attempts[original] < limit:
                     print(f"RETRY {self.attempts[original]}/{limit - 1} {original}: {exc}", flush=True)
                     self.seen.discard(original)
                     self.queue.append((original, kind))
-                    time.sleep(65 if network_block else 5)
+                    time.sleep(45 if network_block else 3)
                 else:
                     self.failed.append((original, str(exc)))
                     print(f"FAIL {original}: {exc}", flush=True)
@@ -263,8 +263,8 @@ class Mirror:
             self.saved_since_pause += 1
             print(f"SAVE {original} -> {target_path.relative_to(self.output)}", flush=True)
             if self.saved_since_pause >= 14:
-                print("PAUSE 65s to respect Internet Archive limits", flush=True)
-                time.sleep(65)
+                print("PAUSE 45s to respect Internet Archive limits", flush=True)
+                time.sleep(45)
                 self.saved_since_pause = 0
             else:
                 time.sleep(1.0)
